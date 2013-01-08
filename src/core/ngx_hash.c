@@ -333,9 +333,11 @@ ngx_hash_init(ngx_hash_init_t *hinit, ngx_hash_key_t *names, ngx_uint_t nelts)
 
 found:
 
-    /*计算test数组, 并以ngx_cacheline_size做内存对其*/
+    /*
+     * 计算test数组, 
+     * 并以ngx_cacheline_size,对每个桶的做内存对齐(空桶除外)
+     * */
     for (i = 0; i < size; i++) {
-        /*多出的sizeof(void*), 用来存储每个桶的最后一个空元素*/
         test[i] = sizeof(void *); 
     }
 
@@ -348,7 +350,7 @@ found:
         test[key] = (u_short) (test[key] + NGX_HASH_ELT_SIZE(&names[n]));
     }
 
-    len = 0;/*元素空间大小*/
+    len = 0;/*对齐后元素总空间大小*/
 
     for (i = 0; i < size; i++) {
         if (test[i] == sizeof(void *)) {
@@ -380,7 +382,8 @@ found:
         }
     }
 
-    /* 申请元素空间
+    /* 
+     * 申请元素空间
      * 多申请了ngx_cacheline_size以便做内存对齐
      * */
     elts = ngx_palloc(hinit->pool, len + ngx_cacheline_size);
