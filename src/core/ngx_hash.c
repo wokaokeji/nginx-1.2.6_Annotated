@@ -338,6 +338,7 @@ found:
      * 并以ngx_cacheline_size,对每个桶的做内存对齐(空桶除外)
      * */
     for (i = 0; i < size; i++) {
+        /*多出的sizeof(void*), 用来存储每个桶的最后一个空元素*/
         test[i] = sizeof(void *); 
     }
 
