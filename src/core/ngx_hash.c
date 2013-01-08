@@ -257,6 +257,7 @@ ngx_hash_init(ngx_hash_init_t *hinit, ngx_hash_key_t *names, ngx_uint_t nelts)
     ngx_uint_t       i, n, key, size, start, bucket_size;
     ngx_hash_elt_t  *elt, **buckets;
 
+    /*测试hinit->bucket_size是否够大*/
     for (n = 0; n < nelts; n++) {
         if (hinit->bucket_size < NGX_HASH_ELT_SIZE(&names[n]) + sizeof(void *))
         {
@@ -268,6 +269,10 @@ ngx_hash_init(ngx_hash_init_t *hinit, ngx_hash_key_t *names, ngx_uint_t nelts)
         }
     }
 
+    /*
+     * 临时计数数组
+     * test[i] = buckets[i]所占内存大小
+     * */
     test = ngx_alloc(hinit->max_size * sizeof(u_short), hinit->pool->log);
     if (test == NULL) {
         return NGX_ERROR;
@@ -282,6 +287,10 @@ ngx_hash_init(ngx_hash_init_t *hinit, ngx_hash_key_t *names, ngx_uint_t nelts)
         start = hinit->max_size - 1000;
     }
 
+    /*
+     * size: 桶的个数
+     * 试探性查找满足要求的size的值(最小的)
+     * */
     for (size = start; size < hinit->max_size; size++) {
 
         ngx_memzero(test, size * sizeof(u_short));
@@ -301,11 +310,11 @@ ngx_hash_init(ngx_hash_init_t *hinit, ngx_hash_key_t *names, ngx_uint_t nelts)
 #endif
 
             if (test[key] > (u_short) bucket_size) {
-                goto next;
+                goto next;/*当前size太小,进行下一次试探*/
             }
         }
 
-        goto found;
+        goto found;/*找到了合适的size*/
 
     next:
 
@@ -324,8 +333,10 @@ ngx_hash_init(ngx_hash_init_t *hinit, ngx_hash_key_t *names, ngx_uint_t nelts)
 
 found:
 
+    /*计算test数组, 并以ngx_cacheline_size做内存对其*/
     for (i = 0; i < size; i++) {
-        test[i] = sizeof(void *);
+        /*多出的sizeof(void*), 用来存储每个桶的最后一个空元素*/
+        test[i] = sizeof(void *); 
     }
 
     for (n = 0; n < nelts; n++) {
@@ -337,7 +348,7 @@ found:
         test[key] = (u_short) (test[key] + NGX_HASH_ELT_SIZE(&names[n]));
     }
 
-    len = 0;
+    len = 0;/*元素空间大小*/
 
     for (i = 0; i < size; i++) {
         if (test[i] == sizeof(void *)) {
@@ -349,6 +360,7 @@ found:
         len += test[i];
     }
 
+    /*申请桶空间*/
     if (hinit->hash == NULL) {
         hinit->hash = ngx_pcalloc(hinit->pool, sizeof(ngx_hash_wildcard_t)
                                              + size * sizeof(ngx_hash_elt_t *));
@@ -368,6 +380,9 @@ found:
         }
     }
 
+    /* 申请元素空间
+     * 多申请了ngx_cacheline_size以便做内存对齐
+     * */
     elts = ngx_palloc(hinit->pool, len + ngx_cacheline_size);
     if (elts == NULL) {
         ngx_free(test);
@@ -376,6 +391,9 @@ found:
 
     elts = ngx_align_ptr(elts, ngx_cacheline_size);
 
+    /*
+     * 更新桶内的指针
+     * */
     for (i = 0; i < size; i++) {
         if (test[i] == sizeof(void *)) {
             continue;
@@ -390,6 +408,9 @@ found:
         test[i] = 0;
     }
 
+    /*
+     * 将names内容存入hash表的元素中
+     * */
     for (n = 0; n < nelts; n++) {
         if (names[n].key.data == NULL) {
             continue;
@@ -406,6 +427,9 @@ found:
         test[key] = (u_short) (test[key] + NGX_HASH_ELT_SIZE(&names[n]));
     }
 
+    /*
+     * 更新每个桶的后一个元素的value为NULL.
+     * */
     for (i = 0; i < size; i++) {
         if (buckets[i] == NULL) {
             continue;
