@@ -32,6 +32,7 @@ ngx_rbtree_insert(ngx_thread_volatile ngx_rbtree_t *tree,
     root = (ngx_rbtree_node_t **) &tree->root;
     sentinel = tree->sentinel;
 
+    /* the tree in null */
     if (*root == sentinel) {
         node->parent = NULL;
         node->left = sentinel;
@@ -42,6 +43,7 @@ ngx_rbtree_insert(ngx_thread_volatile ngx_rbtree_t *tree,
         return;
     }
 
+    /* callback ngx_rbtree_insert_value() */
     tree->insert(*root, node, sentinel);
 
     /* re-balance tree */
@@ -49,9 +51,12 @@ ngx_rbtree_insert(ngx_thread_volatile ngx_rbtree_t *tree,
     while (node != *root && ngx_rbt_is_red(node->parent)) {
 
         if (node->parent == node->parent->parent->left) {
+
+            /* the uncle of the node*/
             temp = node->parent->parent->right;
 
             if (ngx_rbt_is_red(temp)) {
+                /* case 1 in CLRS*/
                 ngx_rbt_black(node->parent);
                 ngx_rbt_black(temp);
                 ngx_rbt_red(node->parent->parent);
@@ -59,16 +64,19 @@ ngx_rbtree_insert(ngx_thread_volatile ngx_rbtree_t *tree,
 
             } else {
                 if (node == node->parent->right) {
+                    /* case 2 in CLRS*/
                     node = node->parent;
                     ngx_rbtree_left_rotate(root, sentinel, node);
                 }
 
+                /* case 3 in CLRS*/
                 ngx_rbt_black(node->parent);
                 ngx_rbt_red(node->parent->parent);
                 ngx_rbtree_right_rotate(root, sentinel, node->parent->parent);
             }
 
         } else {
+            /* same as ABOVE clause with "right" and "left" exchanged */
             temp = node->parent->parent->left;
 
             if (ngx_rbt_is_red(temp)) {
@@ -90,6 +98,7 @@ ngx_rbtree_insert(ngx_thread_volatile ngx_rbtree_t *tree,
         }
     }
 
+    /* make sure the root is black */
     ngx_rbt_black(*root);
 }
 
@@ -115,6 +124,8 @@ ngx_rbtree_insert_value(ngx_rbtree_node_t *temp, ngx_rbtree_node_t *node,
     node->parent = temp;
     node->left = sentinel;
     node->right = sentinel;
+
+    /* so that we can fixup the RBtree */
     ngx_rbt_red(node);
 }
 
