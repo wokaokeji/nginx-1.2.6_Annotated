@@ -21,6 +21,9 @@ static ngx_inline void ngx_rbtree_right_rotate(ngx_rbtree_node_t **root,
     ngx_rbtree_node_t *sentinel, ngx_rbtree_node_t *node);
 
 
+/*
+ * 插入节点，并调整rbtree
+ */
 void
 ngx_rbtree_insert(ngx_thread_volatile ngx_rbtree_t *tree,
     ngx_rbtree_node_t *node)
@@ -102,7 +105,9 @@ ngx_rbtree_insert(ngx_thread_volatile ngx_rbtree_t *tree,
     ngx_rbt_black(*root);
 }
 
-
+/*
+ * 仅插入节点，不调整rbtree
+ */
 void
 ngx_rbtree_insert_value(ngx_rbtree_node_t *temp, ngx_rbtree_node_t *node,
     ngx_rbtree_node_t *sentinel)
