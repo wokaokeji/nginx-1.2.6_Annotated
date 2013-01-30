@@ -269,6 +269,7 @@ main(int argc, char *const *argv)
 
     /* TODO */ ngx_max_sockets = -1;
 
+	/* set the len of different time formats */
     ngx_time_init();
 
 #if (NGX_PCRE)
@@ -296,15 +297,18 @@ main(int argc, char *const *argv)
     init_cycle.log = log;
     ngx_cycle = &init_cycle;
 
+	/* create memory pool */
     init_cycle.pool = ngx_create_pool(1024, log);
     if (init_cycle.pool == NULL) {
         return 1;
     }
 
+	/* 将nginx的运行参数存储到malloc的memory中 */
     if (ngx_save_argv(&init_cycle, argc, argv) != NGX_OK) {
         return 1;
     }
 
+	/* 处理nginx的运行参数 */
     if (ngx_process_options(&init_cycle) != NGX_OK) {
         return 1;
     }
@@ -835,6 +839,7 @@ ngx_process_options(ngx_cycle_t *cycle)
     size_t   len;
 
     if (ngx_prefix) {
+		/* 确保ngx_prefix以'/'结束 */
         len = ngx_strlen(ngx_prefix);
         p = ngx_prefix;
 

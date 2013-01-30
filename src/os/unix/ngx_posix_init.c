@@ -35,13 +35,16 @@ ngx_os_init(ngx_log_t *log)
     ngx_uint_t  n;
 
 #if (NGX_HAVE_OS_SPECIFIC_INIT)
+	/* TODO don't know the define flag */
     if (ngx_os_specific_init(log) != NGX_OK) {
         return NGX_ERROR;
     }
 #endif
 
+	/* 设这运行ps时，'COMMAND'的内容 */
     ngx_init_setproctitle(log);
 
+	/* 内存中页的大小 */
     ngx_pagesize = getpagesize();
     ngx_cacheline_size = NGX_CPU_CACHE_LINE;
 
@@ -65,6 +68,7 @@ ngx_os_init(ngx_log_t *log)
         return NGX_ERROR;
     }
 
+	/* 将最大连接数 设置为最到的文件打开数 */
     ngx_max_sockets = (ngx_int_t) rlmt.rlim_cur;
 
 #if (NGX_HAVE_INHERITED_NONBLOCK || NGX_HAVE_ACCEPT4)
@@ -73,6 +77,7 @@ ngx_os_init(ngx_log_t *log)
     ngx_inherited_nonblocking = 0;
 #endif
 
+	/* 设置随机书种子 */
     srandom(ngx_time());
 
     return NGX_OK;

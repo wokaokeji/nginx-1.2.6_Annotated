@@ -262,6 +262,13 @@ ngx_log_errno(u_char *buf, u_char *last, ngx_err_t err)
 }
 
 
+/**
+ * @brief 
+ *
+ * @param prefix : nginx -p 的参数
+ *
+ * @return 
+ */
 ngx_log_t *
 ngx_log_init(u_char *prefix)
 {
@@ -281,6 +288,7 @@ ngx_log_init(u_char *prefix)
     nlen = ngx_strlen(name);
 
     if (nlen == 0) {
+		/* 如果NGX_ERROR_LOG_PATH为空，则将输出到stderr */
         ngx_log_file.fd = ngx_stderr;
         return &ngx_log;
     }
@@ -292,6 +300,7 @@ ngx_log_init(u_char *prefix)
 #else
     if (name[0] != '/') {
 #endif
+		/* NGX_LOG_ERROR_LOG_PATH为绝对路径 */
 
         if (prefix) {
             plen = ngx_strlen(prefix);
@@ -305,6 +314,7 @@ ngx_log_init(u_char *prefix)
 #endif
         }
 
+		/* 将错误日志路径存储到name中 */
         if (plen) {
             name = malloc(plen + nlen + 2);
             if (name == NULL) {
@@ -312,6 +322,7 @@ ngx_log_init(u_char *prefix)
             }
 
             p = ngx_cpymem(name, prefix, plen);
+			/* now, p = name + plen */
 
             if (!ngx_path_separator(*(p - 1))) {
                 *p++ = '/';
@@ -341,6 +352,7 @@ ngx_log_init(u_char *prefix)
     }
 
     if (p) {
+		/* now, p = name */
         ngx_free(p);
     }
 
