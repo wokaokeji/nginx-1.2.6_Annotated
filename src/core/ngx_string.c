@@ -852,6 +852,14 @@ ngx_dns_strcmp(u_char *s1, u_char *s2)
 }
 
 
+/**
+ * @brief 将字符串转成十进制数
+ *
+ * @param line 字符串
+ * @param n 字符串长度
+ *
+ * @return 转换后的十进制数
+ */
 ngx_int_t
 ngx_atoi(u_char *line, size_t n)
 {

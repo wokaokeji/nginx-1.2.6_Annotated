@@ -13,11 +13,20 @@ static void *ngx_palloc_block(ngx_pool_t *pool, size_t size);
 static void *ngx_palloc_large(ngx_pool_t *pool, size_t size);
 
 
+/**
+ * @brief 创建内存池(以NGX_POOL_ALIGNMENT对齐)
+ *
+ * @param size 内存池大小
+ * @param log
+ *
+ * @return 成功返回所创建内存池的指针，失败返回NULL
+ */
 ngx_pool_t *
 ngx_create_pool(size_t size, ngx_log_t *log)
 {
     ngx_pool_t  *p;
 
+	/* 申请已对齐的内存 */
     p = ngx_memalign(NGX_POOL_ALIGNMENT, size, log);
     if (p == NULL) {
         return NULL;
@@ -29,6 +38,7 @@ ngx_create_pool(size_t size, ngx_log_t *log)
     p->d.failed = 0;
 
     size = size - sizeof(ngx_pool_t);
+	/* 从内存池中单次申请内存的最大值 */
     p->max = (size < NGX_MAX_ALLOC_FROM_POOL) ? size : NGX_MAX_ALLOC_FROM_POOL;
 
     p->current = p;
@@ -41,6 +51,11 @@ ngx_create_pool(size_t size, ngx_log_t *log)
 }
 
 
+/**
+ * @brief 销毁内存池
+ *
+ * @param pool 内存池
+ */
 void
 ngx_destroy_pool(ngx_pool_t *pool)
 {
@@ -48,6 +63,7 @@ ngx_destroy_pool(ngx_pool_t *pool)
     ngx_pool_large_t    *l;
     ngx_pool_cleanup_t  *c;
 
+	/* 调用清理函数表 */
     for (c = pool->cleanup; c; c = c->next) {
         if (c->handler) {
             ngx_log_debug1(NGX_LOG_DEBUG_ALLOC, pool->log, 0,
@@ -56,6 +72,7 @@ ngx_destroy_pool(ngx_pool_t *pool)
         }
     }
 
+	/* 释放所有大内存 */
     for (l = pool->large; l; l = l->next) {
 
         ngx_log_debug1(NGX_LOG_DEBUG_ALLOC, pool->log, 0, "free: %p", l->alloc);
@@ -83,6 +100,7 @@ ngx_destroy_pool(ngx_pool_t *pool)
 
 #endif
 
+	/* 释放内存块链表 */
     for (p = pool, n = pool->d.next; /* void */; p = n, n = n->d.next) {
         ngx_free(p);
 
@@ -93,12 +111,18 @@ ngx_destroy_pool(ngx_pool_t *pool)
 }
 
 
+/**
+ * @brief 重置内存池
+ *
+ * @param pool 内存池
+ */
 void
 ngx_reset_pool(ngx_pool_t *pool)
 {
     ngx_pool_t        *p;
     ngx_pool_large_t  *l;
 
+	/* 释放大内存 */
     for (l = pool->large; l; l = l->next) {
         if (l->alloc) {
             ngx_free(l->alloc);
@@ -107,12 +131,21 @@ ngx_reset_pool(ngx_pool_t *pool)
 
     pool->large = NULL;
 
+	/* 重置所有内存块的正在使用地址 */
     for (p = pool; p; p = p->d.next) {
         p->d.last = (u_char *) p + sizeof(ngx_pool_t);
     }
 }
 
 
+/**
+ * @brief 从内存池中申请内存(所申请的内存起始地址以NGX_ALIGNMENT对齐)
+ *
+ * @param pool 内存池
+ * @param size 申请大小为size的内存
+ *
+ * @return 成功返回所申请的内存起始地址,失败返回NULL
+ */
 void *
 ngx_palloc(ngx_pool_t *pool, size_t size)
 {
@@ -120,29 +153,48 @@ ngx_palloc(ngx_pool_t *pool, size_t size)
     ngx_pool_t  *p;
 
     if (size <= pool->max) {
+		/* 允许从内存块中申请大小为size的内存 */
 
         p = pool->current;
 
         do {
+			/*  内存地址对齐 */
             m = ngx_align_ptr(p->d.last, NGX_ALIGNMENT);
 
             if ((size_t) (p->d.end - m) >= size) {
+				/* 能够当前内存块申请,更新内存池当前指针 */
                 p->d.last = m + size;
 
                 return m;
             }
 
+			/* 否则在下一个内存块中申请 */
             p = p->d.next;
 
         } while (p);
 
+		/*
+		 * 如果没有能够分配的内存块，内存池重新申请一个内存块,
+		 * 并在新申请的内存块中，申请大小为size的内存给用户
+		 */
         return ngx_palloc_block(pool, size);
     }
 
+	/* 此时size超过内存池允许申请内存大小的最大值，申请一个大内存给用户 */
     return ngx_palloc_large(pool, size);
 }
 
 
+/**
+ * @brief 为用户从内存池pootl中申请大小为size的内存
+ *		  操作过程与@see ngx_palloc()相同，但是本函数申请
+ *		  内存时不强制内存对齐
+ *
+ * @param pool 内存
+ * @param size 用户要申请的内存大小
+ *
+ * @return 成功返回所申请的内存起始地址,失败返回NULL
+ */
 void *
 ngx_pnalloc(ngx_pool_t *pool, size_t size)
 {
@@ -173,6 +225,15 @@ ngx_pnalloc(ngx_pool_t *pool, size_t size)
 }
 
 
+/**
+ * @brief 为内存池申请一个新内存块,并在这个内存块中
+ *		  为用户申请大小为size的内存
+ *
+ * @param pool 内存池
+ * @param size 用户要申请的内存大小
+ *
+ * @return 成功返回给用户新申请内存的起始地址，失败返回NULL
+ */
 static void *
 ngx_palloc_block(ngx_pool_t *pool, size_t size)
 {
@@ -180,8 +241,10 @@ ngx_palloc_block(ngx_pool_t *pool, size_t size)
     size_t       psize;
     ngx_pool_t  *p, *new, *current;
 
+	/* 一个内存块的大小 */
     psize = (size_t) (pool->d.end - (u_char *) pool);
 
+	/* 申请一块新的内存块来扩充当前内存池 */
     m = ngx_memalign(NGX_POOL_ALIGNMENT, psize, pool->log);
     if (m == NULL) {
         return NULL;
@@ -194,25 +257,41 @@ ngx_palloc_block(ngx_pool_t *pool, size_t size)
     new->d.failed = 0;
 
     m += sizeof(ngx_pool_data_t);
+	/* 此时,m指向内块的数据段 */
     m = ngx_align_ptr(m, NGX_ALIGNMENT);
-    new->d.last = m + size;
+	
+    new->d.last = m + size;/* 更新内存池当前指针 */
 
     current = pool->current;
 
     for (p = current; p->d.next; p = p->d.next) {
         if (p->d.failed++ > 4) {
+			/*
+			 * 如果从一个内存块中申请内存，失败超过4次，
+			 * 就将内存池的正在使用内存块指向当前内存块的下一个
+			 * 内存块 
+			 */
             current = p->d.next;
         }
     }
 
     p->d.next = new;
 
+	/* 更新内存池的正在使用内存块 */
     pool->current = current ? current : new;
 
     return m;
 }
 
 
+/**
+ * @brief 申请大内存
+ *
+ * @param pool 内存池
+ * @param size 大内存大小
+ *
+ * @return 成功返回申请的大内存起始地址，失败返回NULL
+ */
 static void *
 ngx_palloc_large(ngx_pool_t *pool, size_t size)
 {
@@ -227,6 +306,11 @@ ngx_palloc_large(ngx_pool_t *pool, size_t size)
 
     n = 0;
 
+	/*
+	 * 将新申请的大内存加入到大内存链表.
+	 * 在大内存链表的前三个节点中查找alloc=NULL的节点,
+	 * 若找到，则将新申请的大内存地址存入该节点，否则插入到链表头
+	 */
     for (large = pool->large; large; large = large->next) {
         if (large->alloc == NULL) {
             large->alloc = p;
@@ -238,12 +322,17 @@ ngx_palloc_large(ngx_pool_t *pool, size_t size)
         }
     }
 
+	/*
+	 * 大内存是由malloc申请的，但是
+	 * 大内存链表的节点信息存储在内存池的内存块中.
+	 */
     large = ngx_palloc(pool, sizeof(ngx_pool_large_t));
     if (large == NULL) {
         ngx_free(p);
         return NULL;
     }
 
+	/* 头插法 */
     large->alloc = p;
     large->next = pool->large;
     pool->large = large;
@@ -252,6 +341,17 @@ ngx_palloc_large(ngx_pool_t *pool, size_t size)
 }
 
 
+/**
+ * @brief 在内存池中申请大小为size的并且已经地址对齐的内存
+ *
+ * @param pool 内存池
+ * @param size 申请内存的大小
+ * @param alignment 申请的地址以alignment对齐
+ *
+ * @return 成功返回申请的地址，失败返回NULL
+ *
+ * @note 新申请的这段内存存储在内存池的大内存链表中
+ */
 void *
 ngx_pmemalign(ngx_pool_t *pool, size_t size, size_t alignment)
 {
@@ -277,11 +377,20 @@ ngx_pmemalign(ngx_pool_t *pool, size_t size, size_t alignment)
 }
 
 
+/**
+ * @brief 释放内存池中，地址为p的大内存
+ *
+ * @param pool 内存池
+ * @param p 大内存地址
+ *
+ * @return 成功返回NGX_OK, 失败返回NGX_DECLINED
+ */
 ngx_int_t
 ngx_pfree(ngx_pool_t *pool, void *p)
 {
     ngx_pool_large_t  *l;
 
+	/* 遍历大内存链表, 查找地址为p的大内存 */
     for (l = pool->large; l; l = l->next) {
         if (p == l->alloc) {
             ngx_log_debug1(NGX_LOG_DEBUG_ALLOC, pool->log, 0,
@@ -297,14 +406,23 @@ ngx_pfree(ngx_pool_t *pool, void *p)
 }
 
 
+/**
+ * @brief 在内存池pool中申请大小为size的内存，
+ *		  并把这段内存用0填充
+ *
+ * @param pool 内存池
+ * @param size 要申请的内存的大小
+ *
+ * @return 成功返回新申请内存的地址，失败返回NULL
+ */
 void *
 ngx_pcalloc(ngx_pool_t *pool, size_t size)
 {
     void *p;
 
-    p = ngx_palloc(pool, size);
+    p = ngx_palloc(pool, size);/* 申请内存 */
     if (p) {
-        ngx_memzero(p, size);
+        ngx_memzero(p, size);/* 用0填充 */
     }
 
     return p;
@@ -331,6 +449,7 @@ ngx_pool_cleanup_add(ngx_pool_t *p, size_t size)
         c->data = NULL;
     }
 
+	/* 头插法 */
     c->handler = NULL;
     c->next = p->cleanup;
 
