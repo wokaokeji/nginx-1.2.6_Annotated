@@ -14,6 +14,14 @@ ngx_uint_t  ngx_pagesize_shift;
 ngx_uint_t  ngx_cacheline_size;
 
 
+/**
+ * @brief 申请内存(对malloc()封装)
+ *
+ * @param size 要申请内存的大小
+ * @param log 日志
+ *
+ * @return 成功返回新申请的内存首地址 失败返回NULL
+ */
 void *
 ngx_alloc(size_t size, ngx_log_t *log)
 {
@@ -31,6 +39,16 @@ ngx_alloc(size_t size, ngx_log_t *log)
 }
 
 
+/**
+ * @brief 申请内存, 并用0填充内存
+ *
+ * @param size 要申请内存的大小
+ * @param log 日志
+ *
+ * @return 成功返回新申请的内存首地址 失败返回NULL
+ *
+ * @see ngx_alloc()
+ */
 void *
 ngx_calloc(size_t size, ngx_log_t *log)
 {
@@ -39,6 +57,7 @@ ngx_calloc(size_t size, ngx_log_t *log)
     p = ngx_alloc(size, log);
 
     if (p) {
+		/* 用0填充 */
         ngx_memzero(p, size);
     }
 
@@ -48,6 +67,15 @@ ngx_calloc(size_t size, ngx_log_t *log)
 
 #if (NGX_HAVE_POSIX_MEMALIGN)
 
+/**
+ * @brief 以alignment对齐申请内存(对posix_memalign()封装)
+ *
+ * @param alignment
+ * @param size
+ * @param log
+ *
+ * @return 成功返回新申请的内存首地址 失败返回NULL
+ */
 void *
 ngx_memalign(size_t alignment, size_t size, ngx_log_t *log)
 {
@@ -70,6 +98,15 @@ ngx_memalign(size_t alignment, size_t size, ngx_log_t *log)
 
 #elif (NGX_HAVE_MEMALIGN)
 
+/**
+ * @brief 以alignment对齐申请内存(对memalign()封装)
+ *
+ * @param alignment
+ * @param size
+ * @param log
+ *
+ * @return 成功返回新申请的内存首地址 失败返回NULL
+ */
 void *
 ngx_memalign(size_t alignment, size_t size, ngx_log_t *log)
 {

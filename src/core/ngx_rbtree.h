@@ -19,6 +19,7 @@ typedef ngx_int_t   ngx_rbtree_key_int_t;
 
 typedef struct ngx_rbtree_node_s  ngx_rbtree_node_t;
 
+/**< 红黑树节点 */
 struct ngx_rbtree_node_s {
     ngx_rbtree_key_t       key;
     ngx_rbtree_node_t     *left;
@@ -34,13 +35,23 @@ typedef struct ngx_rbtree_s  ngx_rbtree_t;
 typedef void (*ngx_rbtree_insert_pt) (ngx_rbtree_node_t *root,
     ngx_rbtree_node_t *node, ngx_rbtree_node_t *sentinel);
 
+/**< 红黑树 */
 struct ngx_rbtree_s {
     ngx_rbtree_node_t     *root;
     ngx_rbtree_node_t     *sentinel;
-    ngx_rbtree_insert_pt   insert;  /* 插入节点函数(不进行调整)指针 */
+    ngx_rbtree_insert_pt   insert;  /**< 插入节点函数(只插入,不调整)指针 */
 };
 
 
+/**
+ * @brief 初始化红黑树
+ *
+ * @param tree 红黑树
+ * @param s	红黑树的哨兵
+ * @param i 插入函数
+ *
+ * @return 
+ */
 #define ngx_rbtree_init(tree, s, i)                                           \
     ngx_rbtree_sentinel_init(s);                                              \
     (tree)->root = s;                                                         \
@@ -65,11 +76,25 @@ void ngx_rbtree_insert_timer_value(ngx_rbtree_node_t *root,
 #define ngx_rbt_copy_color(n1, n2)      (n1->color = n2->color)
 
 
-/* a sentinel must be black */
 
+/**
+ * @brief 初始化红黑树的哨兵
+ *
+ * @param node 红黑树的哨兵
+ *
+ * @note a sentinel must be black
+ */
 #define ngx_rbtree_sentinel_init(node)  ngx_rbt_black(node)
 
 
+/**
+ * @brief 获得红黑树key的最小值的节点
+ *
+ * @param node
+ * @param sentinel
+ *
+ * @return 返回最小key的节点
+ */
 static ngx_inline ngx_rbtree_node_t *
 ngx_rbtree_min(ngx_rbtree_node_t *node, ngx_rbtree_node_t *sentinel)
 {

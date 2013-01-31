@@ -48,7 +48,7 @@ ngx_array_create(ngx_pool_t *p, ngx_uint_t n, size_t size)
  * @param a 数组
  *
  * @note 仅当该数组是当前内存池最近申请的空间时，内存才会释放,
- *		 并且ngx_array_push()和ngx_array_push_n()保证了一个
+ *		 并且@see ngx_array_push()和@see ngx_array_push_n()保证了一个
  *		 数组在内存池中是连续的
  */
 void
@@ -135,7 +135,7 @@ ngx_array_push(ngx_array_t *a)
  *
  * @return 返回新申请的第一个元素的地址, 否则返回NULL
  *
- * @note  操作过程同ngx_array_push()
+ * @note  操作过程同@see ngx_array_push()
  */
 void *
 ngx_array_push_n(ngx_array_t *a, ngx_uint_t n)

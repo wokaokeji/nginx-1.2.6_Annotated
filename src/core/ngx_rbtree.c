@@ -21,8 +21,13 @@ static ngx_inline void ngx_rbtree_right_rotate(ngx_rbtree_node_t **root,
     ngx_rbtree_node_t *sentinel, ngx_rbtree_node_t *node);
 
 
-/*
- * 插入节点，并调整rbtree
+/**
+ * @brief 插入节点，并调整rbtree
+ *
+ * @param tree 红黑树
+ * @param node 待插入的节点
+ *
+ * @see ngx_rbtree_insert_value()
  */
 void
 ngx_rbtree_insert(ngx_thread_volatile ngx_rbtree_t *tree,
@@ -34,8 +39,7 @@ ngx_rbtree_insert(ngx_thread_volatile ngx_rbtree_t *tree,
 
     root = (ngx_rbtree_node_t **) &tree->root;
     sentinel = tree->sentinel;
-
-    /* the tree in null */
+	/* the tree in null */
     if (*root == sentinel) {
         node->parent = NULL;
         node->left = sentinel;
@@ -105,8 +109,12 @@ ngx_rbtree_insert(ngx_thread_volatile ngx_rbtree_t *tree,
     ngx_rbt_black(*root);
 }
 
-/*
- * 仅插入节点，不调整rbtree
+/**
+ * @brief 仅插入节点，不调整rbtree
+ *
+ * @param temp 从节点temp插入节点node
+ * @param node 待插入的节点
+ * @param sentinel 红黑树哨兵节点
  */
 void
 ngx_rbtree_insert_value(ngx_rbtree_node_t *temp, ngx_rbtree_node_t *node,
@@ -338,6 +346,13 @@ ngx_rbtree_delete(ngx_thread_volatile ngx_rbtree_t *tree,
 }
 
 
+/**
+ * @brief 对红黑树做左旋转操作
+ *
+ * @param root *root为红黑树的中心
+ * @param sentinel 红黑树的哨兵节点
+ * @param node 以node为中心左旋转
+ */
 static ngx_inline void
 ngx_rbtree_left_rotate(ngx_rbtree_node_t **root, ngx_rbtree_node_t *sentinel,
     ngx_rbtree_node_t *node)
@@ -368,6 +383,13 @@ ngx_rbtree_left_rotate(ngx_rbtree_node_t **root, ngx_rbtree_node_t *sentinel,
 }
 
 
+/**
+ * @brief 对红黑树做右旋转操作
+ *
+ * @param root *root为红黑树的中心
+ * @param sentinel 红黑树的哨兵节点
+ * @param node 以node为中心右旋转
+ */
 static ngx_inline void
 ngx_rbtree_right_rotate(ngx_rbtree_node_t **root, ngx_rbtree_node_t *sentinel,
     ngx_rbtree_node_t *node)

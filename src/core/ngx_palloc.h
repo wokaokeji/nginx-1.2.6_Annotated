@@ -45,7 +45,7 @@ struct ngx_pool_large_s {
     void                 *alloc;
 };
 
-
+/**< 内存块信息 */
 typedef struct {
     u_char               *last;			/**< 内存块当前指针 */
     u_char               *end;			/**< 当前内存块的尾指针 */
@@ -54,6 +54,7 @@ typedef struct {
 } ngx_pool_data_t;
 
 
+/**< 内存池信息 */
 struct ngx_pool_s {
     ngx_pool_data_t       d;			/**< 内存块信息 */
     size_t                max;			/**< 一次能从内存池中申请的最大内存大小 */
