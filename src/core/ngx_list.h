@@ -15,13 +15,15 @@
 
 typedef struct ngx_list_part_s  ngx_list_part_t;
 
+/**< 链表节点 */
 struct ngx_list_part_s {
-    void             *elts;
+    void             *elts;		/**< 链表节点数据 */
     ngx_uint_t        nelts;
     ngx_list_part_t  *next;
 };
 
 
+/**< 链表 */
 typedef struct {
     ngx_list_part_t  *last;
     ngx_list_part_t   part;
@@ -33,6 +35,16 @@ typedef struct {
 
 ngx_list_t *ngx_list_create(ngx_pool_t *pool, ngx_uint_t n, size_t size);
 
+/**
+ * @brief 初始化链表
+ *
+ * @param list 链表
+ * @param pool 内存池
+ * @param n 链表容量
+ * @param size 链条一个节点所需内存大小
+ *
+ * @return 成功返回NGX_OK(0)，失败返回NGX_ERROR(-1)
+ */
 static ngx_inline ngx_int_t
 ngx_list_init(ngx_list_t *list, ngx_pool_t *pool, ngx_uint_t n, size_t size)
 {
