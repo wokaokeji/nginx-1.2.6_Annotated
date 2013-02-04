@@ -354,6 +354,7 @@ main(int argc, char *const *argv)
     }
 
     if (ngx_signal) {
+        /* TODO */
         return ngx_signal_process(cycle, ngx_signal);
     }
 
