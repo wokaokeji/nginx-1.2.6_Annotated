@@ -52,21 +52,21 @@ extern ngx_module_t  ngx_http_range_body_filter_module;
 extern ngx_module_t  ngx_http_not_modified_filter_module;
 
 ngx_module_t *ngx_modules[] = {
-    &ngx_core_module,
-    &ngx_errlog_module,
-    &ngx_conf_module,
-    &ngx_events_module,
-    &ngx_event_core_module,
-    &ngx_epoll_module,
-    &ngx_regex_module,
-    &ngx_http_module,
-    &ngx_http_core_module,
-    &ngx_http_log_module,
-    &ngx_http_upstream_module,
-    &ngx_http_static_module,
-    &ngx_http_autoindex_module,
-    &ngx_http_index_module,
-    &ngx_http_auth_basic_module,
+    &ngx_core_module,               /* NGX_CORE_MODULE */
+    &ngx_errlog_module,             /* NGX_CORE_MODULE */
+    &ngx_conf_module,               /* NGX_CONF_MODULE */
+    &ngx_events_module,             /* NGX_CORE_MODULE */
+    &ngx_event_core_module,         /* NGX_EVENT_MODULE */
+    &ngx_epoll_module,              /* NGX_EVENT_MODULE */
+    &ngx_regex_module,              /* NGX_CORE_MODULE */
+    &ngx_http_module,               /* NGX_CORE_MODULE */
+    &ngx_http_core_module,          /* NGX_HTTP_MODULE */
+    &ngx_http_log_module,           /* NGX_HTTP_MODULE */
+    &ngx_http_upstream_module,      /* NGX_HTTP_MODULE */
+    &ngx_http_static_module,        /* NGX_HTTP_MODULE */
+    &ngx_http_autoindex_module,     /*. */
+    &ngx_http_index_module,         /*. */
+    &ngx_http_auth_basic_module,    /*. */
     &ngx_http_access_module,
     &ngx_http_limit_conn_module,
     &ngx_http_limit_req_module,
@@ -97,7 +97,7 @@ ngx_module_t *ngx_modules[] = {
     &ngx_http_headers_filter_module,
     &ngx_http_copy_filter_module,
     &ngx_http_range_body_filter_module,
-    &ngx_http_not_modified_filter_module,
+    &ngx_http_not_modified_filter_module,       /* NGX_HTTP_MODULE */
     NULL
 };
 
