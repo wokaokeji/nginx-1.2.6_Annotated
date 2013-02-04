@@ -6,6 +6,7 @@
 
 /**
  * 本链表在内存池中申请内存;
+ * 创建链表时需要指定链表中一个元素的大小
  * 链表容量可以自动增加;
  * 只有向链表尾中添加新元素的操作,@see ngx_list_push();
  * 
@@ -19,7 +20,7 @@
  * @brief 创建链表
  *
  * @param pool 链表
- * @param n 链表的容量
+ * @param n 每个链表块的容量
  * @param size 链表节点所需内存大小
  *
  * @return 成功返回新创建的链表，否则返回NULL
@@ -70,7 +71,7 @@ ngx_list_push(ngx_list_t *l)
     if (last->nelts == l->nalloc) {
 
         /* the last part is full, allocate a new list part */
-		/* 当前链表块满了，需要扩容 */
+        /* 当前链表块满了，需要扩容 */
 
         last = ngx_palloc(l->pool, sizeof(ngx_list_part_t));
         if (last == NULL) {
@@ -85,7 +86,7 @@ ngx_list_push(ngx_list_t *l)
         last->nelts = 0;
         last->next = NULL;
 
-		/* 尾插法 */
+        /* 尾插法 */
         l->last->next = last;
         l->last = last;
     }

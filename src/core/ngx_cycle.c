@@ -102,6 +102,7 @@ ngx_init_cycle(ngx_cycle_t *old_cycle)
     }
 
     cycle->conf_file.len = old_cycle->conf_file.len;
+    /* TODO: 为什么不用ngx_pstrdup()? */
     cycle->conf_file.data = ngx_pnalloc(pool, old_cycle->conf_file.len + 1);
     if (cycle->conf_file.data == NULL) {
         ngx_destroy_pool(pool);
@@ -182,6 +183,7 @@ ngx_init_cycle(ngx_cycle_t *old_cycle)
     cycle->listening.pool = pool;
 
 
+    /* TODO */
     ngx_queue_init(&cycle->reusable_connections_queue);
 
 
@@ -212,6 +214,7 @@ ngx_init_cycle(ngx_cycle_t *old_cycle)
     ngx_strlow(cycle->hostname.data, (u_char *) hostname, cycle->hostname.len);
 
 
+    /* 创建所有CORE模块配置 */
     for (i = 0; ngx_modules[i]; i++) {
         if (ngx_modules[i]->type != NGX_CORE_MODULE) {
             continue;
@@ -220,6 +223,11 @@ ngx_init_cycle(ngx_cycle_t *old_cycle)
         module = ngx_modules[i]->ctx;
 
         if (module->create_conf) {
+            /*
+             * create_conf() is callback function. 
+             * when ngx_module[i] == &ngx_core_module,
+             * @see ngx_core_module_create_conf() in nginx.c
+             */
             rv = module->create_conf(cycle);
             if (rv == NULL) {
                 ngx_destroy_pool(pool);
@@ -230,6 +238,7 @@ ngx_init_cycle(ngx_cycle_t *old_cycle)
     }
 
 
+    /* TODO: where does define environ? */
     senv = environ;
 
 
@@ -265,6 +274,7 @@ ngx_init_cycle(ngx_cycle_t *old_cycle)
         return NULL;
     }
 
+    /* TODO */
     if (ngx_conf_parse(&conf, &cycle->conf_file) != NGX_CONF_OK) {
         environ = senv;
         ngx_destroy_cycle_pools(&conf);
@@ -276,6 +286,7 @@ ngx_init_cycle(ngx_cycle_t *old_cycle)
                        cycle->conf_file.data);
     }
 
+    /* 初始化所有CORE模块配置 */
     for (i = 0; ngx_modules[i]; i++) {
         if (ngx_modules[i]->type != NGX_CORE_MODULE) {
             continue;
@@ -284,6 +295,11 @@ ngx_init_cycle(ngx_cycle_t *old_cycle)
         module = ngx_modules[i]->ctx;
 
         if (module->init_conf) {
+            /* 
+             * init_conf() is callback function.
+             * when ngx_module[i] == &ngx_core_module,
+             * @see ngx_core_module_init_conf() in nginx.c 
+             */
             if (module->init_conf(cycle, cycle->conf_ctx[ngx_modules[i]->index])
                 == NGX_CONF_ERROR)
             {
@@ -592,6 +608,11 @@ ngx_init_cycle(ngx_cycle_t *old_cycle)
 
     pool->log = cycle->log;
 
+    /* 
+     * 初始化所有模块
+     * init_module() is callback function.
+     */
+    for (i = 0; ngx_modules[i]; i++) {
     for (i = 0; ngx_modules[i]; i++) {
         if (ngx_modules[i]->init_module) {
             if (ngx_modules[i]->init_module(cycle) != NGX_OK) {

@@ -793,6 +793,15 @@ ngx_conf_include(ngx_conf_t *cf, ngx_command_t *cmd, void *conf)
 }
 
 
+/**
+ * @brief 将name转为绝对路径，如果name为绝对路径，则不做操作
+ *
+ * @param cycle
+ * @param name 路径
+ * @param conf_prefix 是否有配置的前缀路径(1:有, 0:没有)
+ *
+ * @return 成功返回0，失败返回其他
+ */
 ngx_int_t
 ngx_conf_full_name(ngx_cycle_t *cycle, ngx_str_t *name, ngx_uint_t conf_prefix)
 {
@@ -838,6 +847,13 @@ ngx_conf_full_name(ngx_cycle_t *cycle, ngx_str_t *name, ngx_uint_t conf_prefix)
 }
 
 
+/**
+ * @brief 判断name是否是绝对路径
+ *
+ * @param name 路径
+ *
+ * @return 成功返回0，失败返回其他
+ */
 static ngx_int_t
 ngx_conf_test_full_name(ngx_str_t *name)
 {

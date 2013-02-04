@@ -48,8 +48,8 @@ ngx_array_create(ngx_pool_t *p, ngx_uint_t n, size_t size)
  * @param a 数组
  *
  * @note 仅当该数组是当前内存池最近申请的空间时，内存才会释放,
- *		 并且@see ngx_array_push()和@see ngx_array_push_n()保证了一个
- *		 数组在内存池中是连续的
+ *       并且@see ngx_array_push()和@see ngx_array_push_n()保证了一个
+ *       数组在内存池中是连续的
  */
 void
 ngx_array_destroy(ngx_array_t *a)
@@ -96,8 +96,8 @@ ngx_array_push(ngx_array_t *a)
             /*
              * the array allocation is the last in the pool
              * and there is space for new allocation
-			 * 该数组是当前内存池中最近申请的空间，并且最新的这个
-			 * 内存池中还有足够空间再存放一个数组元素的空间
+             * 该数组是当前内存池中最近申请的空间，并且最新的这个
+             * 内存池中还有足够空间再存放一个数组元素的空间
              */
 
             p->d.last += a->size;
@@ -106,10 +106,10 @@ ngx_array_push(ngx_array_t *a)
         } else {
             /* allocate a new array */
 
-			/* 
-			 * 否则重新内存，并把原来的数组数组复制到新申请的内存,
-			 * 这样才能保证一个数组在内存池中是连续的
-			 */
+            /* 
+             * 否则重新内存，并把原来的数组数组复制到新申请的内存,
+             * 这样才能保证一个数组在内存池中是连续的
+             */
             new = ngx_palloc(p, 2 * size);
             if (new == NULL) {
                 return NULL;

@@ -47,20 +47,20 @@ struct ngx_pool_large_s {
 
 /**< 内存块信息 */
 typedef struct {
-    u_char               *last;			/**< 内存块当前指针 */
-    u_char               *end;			/**< 当前内存块的尾指针 */
-    ngx_pool_t           *next;			/**< 下一个内存块(内存池采取链表形式) */
+    u_char               *last;         /**< 内存块当前指针 */
+    u_char               *end;          /**< 当前内存块的尾指针 */
+    ngx_pool_t           *next;         /**< 下一个内存块(内存池采取链表形式) */
     ngx_uint_t            failed;
 } ngx_pool_data_t;
 
 
 /**< 内存池信息 */
 struct ngx_pool_s {
-    ngx_pool_data_t       d;			/**< 内存块信息 */
-    size_t                max;			/**< 一次能从内存池中申请的最大内存大小 */
-    ngx_pool_t           *current;		/**< 当前正在用的内存块 */
+    ngx_pool_data_t       d;            /**< 内存块信息 */
+    size_t                max;          /**< 一次能从内存池中申请的最大内存大小 */
+    ngx_pool_t           *current;      /**< 当前正在用的内存块 */
     ngx_chain_t          *chain;
-    ngx_pool_large_t     *large;		/**< 大内存链表 */
+    ngx_pool_large_t     *large;        /**< 大内存链表 */
     ngx_pool_cleanup_t   *cleanup;
     ngx_log_t            *log;
 };

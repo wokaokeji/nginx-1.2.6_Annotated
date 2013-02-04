@@ -15,20 +15,20 @@
 
 typedef struct ngx_list_part_s  ngx_list_part_t;
 
-/**< 链表节点 */
+/**< 链表块 */
 struct ngx_list_part_s {
-    void             *elts;		/**< 链表节点数据 */
-    ngx_uint_t        nelts;
+    void             *elts;     /**< 链表块数据 */
+    ngx_uint_t        nelts;    /**< 当前链表块容量 */
     ngx_list_part_t  *next;
 };
 
 
 /**< 链表 */
 typedef struct {
-    ngx_list_part_t  *last;
-    ngx_list_part_t   part;
-    size_t            size;
-    ngx_uint_t        nalloc;
+    ngx_list_part_t  *last;     /**< 正在使用的链表块 */
+    ngx_list_part_t   part;     /**< 链表的第一个链表块 */
+    size_t            size;     /**< 链表中一个元素的大小 */
+    ngx_uint_t        nalloc;   /**< 每个链表块的容量 */
     ngx_pool_t       *pool;
 } ngx_list_t;
 
@@ -55,9 +55,7 @@ ngx_list_init(ngx_list_t *list, ngx_pool_t *pool, ngx_uint_t n, size_t size)
 
     list->part.nelts = 0;
     list->part.next = NULL;
-    list->last = &list->part;
-    list->size = size;
-    list->nalloc = n;
+    list->last = &list->part; list->size = size; list->nalloc = n;
     list->pool = pool;
 
     return NGX_OK;
