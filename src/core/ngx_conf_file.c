@@ -225,6 +225,9 @@ ngx_conf_parse(ngx_conf_t *cf, ngx_str_t *filename)
              * "types { ... }" directive
              */
 
+            /*
+             * 只有当模块函数调用ngx_conf_parse(),才有可能对cf->handler才有可能不等NULL
+             */
             rv = (*cf->handler)(cf, NULL, cf->handler_conf);
             if (rv == NGX_CONF_OK) {
                 continue;
@@ -384,6 +387,7 @@ ngx_conf_handler(ngx_conf_t *cf, ngx_int_t last)
                 }
             }
 
+            /* TODO: commands中的函数 */
             rv = cmd->set(cf, cmd, conf);
 
             if (rv == NGX_CONF_OK) {

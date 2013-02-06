@@ -226,7 +226,7 @@ ngx_init_cycle(ngx_cycle_t *old_cycle)
             /*
              * create_conf() is callback function. 
              * when ngx_module[i] == &ngx_core_module,
-             * @see ngx_core_module_create_conf() in nginx.c
+             * ngx_core_module_create_conf() in nginx.c
              */
             rv = module->create_conf(cycle);
             if (rv == NULL) {
@@ -268,6 +268,7 @@ ngx_init_cycle(ngx_cycle_t *old_cycle)
     log->log_level = NGX_LOG_DEBUG_ALL;
 #endif
 
+    /* 加载所有模块commands */
     if (ngx_conf_param(&conf) != NGX_CONF_OK) {
         environ = senv;
         ngx_destroy_cycle_pools(&conf);
@@ -298,7 +299,7 @@ ngx_init_cycle(ngx_cycle_t *old_cycle)
             /* 
              * init_conf() is callback function.
              * when ngx_module[i] == &ngx_core_module,
-             * @see ngx_core_module_init_conf() in nginx.c 
+             * ngx_core_module_init_conf() in nginx.c 
              */
             if (module->init_conf(cycle, cycle->conf_ctx[ngx_modules[i]->index])
                 == NGX_CONF_ERROR)
@@ -609,8 +610,7 @@ ngx_init_cycle(ngx_cycle_t *old_cycle)
     pool->log = cycle->log;
 
     /* 
-     * 初始化所有模块
-     * init_module() is callback function.
+     * 初始化所有模块.
      */
     for (i = 0; ngx_modules[i]; i++) {
     for (i = 0; ngx_modules[i]; i++) {

@@ -187,7 +187,7 @@ ngx_palloc(ngx_pool_t *pool, size_t size)
 
 /**
  * @brief 为用户从内存池pootl中申请大小为size的内存
- *        操作过程与@see ngx_palloc()相同，但是本函数申请
+ *        操作过程与@see ngx_palloc() 相同，但是本函数申请
  *        内存时不强制内存对齐
  *
  * @param pool 内存
