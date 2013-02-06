@@ -411,6 +411,7 @@ main(int argc, char *const *argv)
     ngx_use_stderr = 0;
 
     if (ngx_process == NGX_PROCESS_SINGLE) {
+        /* TODO: */
         ngx_single_process_cycle(cycle);
 
     } else {
@@ -930,6 +931,15 @@ ngx_process_options(ngx_cycle_t *cycle)
 }
 
 
+/**
+ * @brief 
+ *
+ * @param cycle
+ *
+ * @return 
+ *
+ * @note ngx_core_module_ctx.create_conf等于本函数.
+ */
 static void *
 ngx_core_module_create_conf(ngx_cycle_t *cycle)
 {
@@ -979,6 +989,16 @@ ngx_core_module_create_conf(ngx_cycle_t *cycle)
 }
 
 
+/**
+ * @brief 
+ *
+ * @param cycle
+ * @param conf
+ *
+ * @return 
+ *
+ * @note ngx_core_module_ctx.init_conf等于本函数.
+ */
 static char *
 ngx_core_module_init_conf(ngx_cycle_t *cycle, void *conf)
 {
