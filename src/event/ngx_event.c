@@ -244,7 +244,10 @@ ngx_process_events_and_timers(ngx_cycle_t *cycle)
 
     delta = ngx_current_msec;
 
-    /* TODO */
+    /* TODO 
+     * 目前ngx_epoll_module模块的ngx_epoll_init()
+     * 对ngx_event_actions.process_events赋值
+     */
     (void) ngx_process_events(cycle, timer, flags);
 
     delta = ngx_current_msec - delta;
@@ -434,6 +437,7 @@ ngx_event_init_conf(ngx_cycle_t *cycle, void *conf)
         return NGX_CONF_ERROR;
     }
 
+    /* TODO when? */
     return NGX_CONF_OK;
 }
 
@@ -581,6 +585,16 @@ ngx_timer_signal_handler(int signo)
 #endif
 
 
+/**
+ * @brief 
+ *
+ * @param cycle
+ *
+ * @return 
+ *
+ * @note ngx_event_core_module.init_process等于本函数.
+ *       本函数会被@see ngx_single_process_cycle() 调用.
+ */
 static ngx_int_t
 ngx_event_process_init(ngx_cycle_t *cycle)
 {
@@ -615,6 +629,9 @@ ngx_event_process_init(ngx_cycle_t *cycle)
         return NGX_ERROR;
     }
 
+    /*
+     * 初始化所有EVENT模块中的事件
+     */
     for (m = 0; ngx_modules[m]; m++) {
         if (ngx_modules[m]->type != NGX_EVENT_MODULE) {
             continue;

@@ -289,6 +289,18 @@ failed:
 #endif
 
 
+/**
+ * @brief 
+ *
+ * @param cycle
+ * @param timer
+ *
+ * @return 
+ *
+ * @note ngx_epoll_module_ctx.actions.init等于本函数.
+ *       本函数会被@see ngx_event_core_module 模块的
+ *       @see ngx_event_process_init() 调用.
+ */
 static ngx_int_t
 ngx_epoll_init(ngx_cycle_t *cycle, ngx_msec_t timer)
 {
@@ -328,6 +340,10 @@ ngx_epoll_init(ngx_cycle_t *cycle, ngx_msec_t timer)
 
     ngx_io = ngx_os_io;
 
+    /*
+     * ngx_process_events_and_timers()会调用
+     * ngx_event_actions.process_events函数
+     */
     ngx_event_actions = ngx_epoll_module_ctx.actions;
 
 #if (NGX_HAVE_CLEAR_EVENT)

@@ -300,6 +300,7 @@ ngx_single_process_cycle(ngx_cycle_t *cycle)
         exit(2);
     }
 
+    /* 调用各模块的init_process函数 */
     for (i = 0; ngx_modules[i]; i++) {
         if (ngx_modules[i]->init_process) {
             if (ngx_modules[i]->init_process(cycle) == NGX_ERROR) {
