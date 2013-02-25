@@ -245,8 +245,8 @@ ngx_process_events_and_timers(ngx_cycle_t *cycle)
     delta = ngx_current_msec;
 
     /* TODO 
-     * 目前ngx_epoll_module模块的ngx_epoll_init()
-     * 对ngx_event_actions.process_events赋值
+     * 目前ngx_epoll_module模块的ngx_epoll_init()对
+     * ngx_event_actions赋值,其值等于ngx_epoll_module_ctx.actions.
      */
     (void) ngx_process_events(cycle, timer, flags);
 
