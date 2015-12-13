@@ -613,7 +613,6 @@ ngx_init_cycle(ngx_cycle_t *old_cycle)
      * 初始化所有模块.
      */
     for (i = 0; ngx_modules[i]; i++) {
-    for (i = 0; ngx_modules[i]; i++) {
         if (ngx_modules[i]->init_module) {
             if (ngx_modules[i]->init_module(cycle) != NGX_OK) {
                 /* fatal */
